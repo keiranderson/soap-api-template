@@ -1,0 +1,60 @@
+<!-- Configure WS-Security Inbound- and Outbound-Interceptors -->
+<beans
+  xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cxf="http://cxf.apache.org/core"
+  xmlns:wsrm-mgr="http://cxf.apache.org/ws/rm/manager"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xsi:schemaLocation="
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+    http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+    http://schemas.xmlsoap.org/ws/2005/02/rm/policy http://schemas.xmlsoap.org/ws/2005/02/rm/wsrm-policy.xsd
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<cxf:bus>
+	  <cxf:outInterceptors>
+	  	<ref bean="outbound-security"/>
+	  </cxf:outInterceptors>
+	  
+	  <cxf:inInterceptors>
+	  	<ref bean="inbound-security"/>
+	  </cxf:inInterceptors>
+	  
+	</cxf:bus>
+	<bean class="com.asb.wex.soap.ClientPasswordCallback" name="ClientPasswordCallback"/>
+	<!-- See Apache WSS4J documentation for details on configuration (https://ws.apache.org/wss4j/config.html) -->
+	<bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor" id="inbound-security">
+	    <constructor-arg>
+	        <map>
+	            <entry key="action" value="Signature Timestamp"/>
+	            <entry key="user" value="keir.cert"/>
+	            <entry key="signaturePropFile" value="crypto.properties"/>
+	            <entry key="encryptionPropFile" value="crypto.properties"/>
+	            <entry key="signatureKeyIdentifier" value="DirectReference"/>
+	            <entry key="encryptionUser" value="server"/>
+	            <entry key="passwordCallbackRef" value-ref="ClientPasswordCallback"/>
+	            <entry key="signatureParts" value="{}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp;{Element}{http://schemas.xmlsoap.org/soap/envelope/}Body"/>
+	            <entry key="signatureC14nAlgorithm" value="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+	            <entry key="signatureAlgorithm" value="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+	            <entry key="signatureDigestAlgorithm" value="http://www.w3.org/2001/04/xmlenc#sha256"/>
+	        </map>
+	    </constructor-arg>
+	</bean>
+	<bean class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor" id="outbound-security">
+	    <constructor-arg>
+	        <map>
+	            <entry key="action" value="Signature Timestamp"/>
+	            <entry key="user" value="keir.cert"/>
+	            <entry key="signaturePropFile" value="crypto.properties"/>
+	            <entry key="encryptionPropFile" value="crypto.properties"/>
+	            <entry key="signatureKeyIdentifier" value="DirectReference"/>
+	            <entry key="encryptionUser" value="server"/>
+	            <entry key="passwordCallbackRef" value-ref="ClientPasswordCallback"/>
+	            <entry key="signatureParts" value="{}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp;{Element}{http://schemas.xmlsoap.org/soap/envelope/}Body"/>
+	            <entry key="encryptionParts" value="{Element}{http://www.w3.org/2000/09/xmldsig#}Signature;{Content}{http://schemas.xmlsoap.org/soap/envelope/}Body"/>
+	            <entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#sha256"/>
+	            <entry key="signatureAlgorithm" value="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+	            <entry key="signatureDigestAlgorithm" value="http://www.w3.org/2001/04/xmlenc#sha256"/>
+	        </map>
+	    </constructor-arg>
+	</bean>
+</beans>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Config file containing actual code for converting temperature -->
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <sub-flow name="ConvertTemp_SubFlow">
+        <logger message="Started flow: #[flow.name]" level="INFO" doc:name="Logger"/>
+        <!-- Dataweave transform converts temp from C to F or from F to C depending on input. No handling for other temperature conversions at this time -->
+        <dw:transform-message doc:name="Transform Message" metadata:id="e10f809d-07a7-4d5b-b79b-1ab997734862">
+            <dw:input-payload mimeType="application/xml"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+%namespace ns0 http://www.webserviceX.NET/
+---
+{
+	ns0#ConvertTempResponse: {
+		ns0#ConvertTempResult: (payload.ns0#ConvertTemp.ns0#Temperature - 32) * 5 / 9
+		when payload.ns0#ConvertTemp.ns0#FromUnit == "degreeFahrenheit" and payload.ns0#ConvertTemp.ns0#ToUnit == "degreeCelsius"
+		otherwise
+		ns0#ConvertTempResult: payload.ns0#ConvertTemp.ns0#Temperature * 9 / 5 + 32
+		when payload.ns0#ConvertTemp.ns0#FromUnit == "degreeCelsius" and payload.ns0#ConvertTemp.ns0#ToUnit == "degreeFahrenheit"
+		otherwise
+		ns0#ConvertTempResult: 0
+	}
+	
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="Completed flow: #[flow.name]" level="INFO" doc:name="Logger"/>
+    </sub-flow>
+</mule>

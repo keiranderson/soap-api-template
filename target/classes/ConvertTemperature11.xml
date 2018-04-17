@@ -1,0 +1,57 @@
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap"
+xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+xmlns:http="http://www.mulesoft.org/schema/mule/http"
+xmlns:spring="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
+http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+  <spring:beans>
+<!-- Configure Secure Property Placeholder as a spring bean  -->
+        <spring:bean id="propertyConfigurer" class="org.mule.modules.security.placeholder.SecurePropertyPlaceholderModule">
+            <spring:property name="encryptionAlgorithm" value="AES"/>
+            <spring:property name="encryptionMode" value="CBC"/>
+            <spring:property name="key" value="${vault.key}"/>
+            <spring:property name="location" value="properties/${mule.env}.soap.api.template.properties"/>
+            <spring:property name="ignoreResourceNotFound" value="false"/>
+        </spring:bean>
+<!-- Configure logging for CXF interceptors as spring beans  -->
+        <cxf:bus>
+	        <cxf:inInterceptors>
+			  	<spring:bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+			</cxf:inInterceptors>
+			<cxf:outInterceptors>
+				<spring:bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+			</cxf:outInterceptors>
+		</cxf:bus>
+    </spring:beans>
+    <!-- HTTP listener configuration with TLS -->
+    <http:listener-config name="HTTP_Listener_Config" host="0.0.0.0" port="${soap.api.template.http.inbound.port}" basePath="${soap.api.template.http.inbound.path}" doc:name="HTTP Listener Configuration" protocol="HTTPS">
+        <tls:context>
+            <tls:key-store type="jks" path="${soap.api.template.keystore.location}" alias="${soap.api.template.keystore.key.alias}" keyPassword="${soap.api.template.keystore.key.password}" password="${soap.api.template.keystore.password}"/>
+        </tls:context>
+    </http:listener-config>
+    <!-- SOAP APIKit configuration routes incoming messages to correct resource based on WSDL (Generate flows from WSDL) -->
+  <apikit-soap:config name="/ConvertTemperature/ConvertTemperatureSoap/api-config" wsdlUrl="ConvertTemperature.wsdl" serviceName="ConvertTemperature" portName="ConvertTemperatureSoap" doc:name="APIkit SOAP: Configuration"/>
+  <flow name="api-main">
+    <http:listener path="${soap.api.template.http.inbound.soap11.path}" config-ref="HTTP_Listener_Config" doc:name="/ConvertTemperature/ConvertTemperatureSoap" />
+    <apikit-soap:router config-ref="/ConvertTemperature/ConvertTemperatureSoap/api-config" doc:name="SOAP Router"/>
+  </flow>
+  <flow name="ConvertTemp:/ConvertTemperature/ConvertTemperatureSoap/api-config">
+  		<logger message="Started flow: #[flow.name]" level="INFO" doc:name="Logger"/>
+        <flow-ref name="ConvertTemp_SubFlow" doc:name="Flow Reference"/>
+        <logger message="Completed flow: #[flow.name]" level="INFO" doc:name="Logger"/>
+  </flow>
+</mule>

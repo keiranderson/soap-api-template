@@ -1,0 +1,27 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.webserviceX.NET/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.webserviceX.NET/">
+	<xs:element name="ConvertTemp">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="1" maxOccurs="1" type="xs:double" name="Temperature"/>
+				<xs:element minOccurs="1" maxOccurs="1" type="tns:TemperatureUnit" name="FromUnit"/>
+				<xs:element minOccurs="1" maxOccurs="1" type="tns:TemperatureUnit" name="ToUnit"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="TemperatureUnit">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="degreeCelsius"/>
+			<xs:enumeration value="degreeFahrenheit"/>
+			<xs:enumeration value="degreeRankine"/>
+			<xs:enumeration value="degreeReaumur"/>
+			<xs:enumeration value="kelvin"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="ConvertTempResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="1" maxOccurs="1" name="ConvertTempResult" type="xs:double"/>
+			</xs:sequence>
+		</xs:complexType>
+  	</xs:element>
+</xs:schema>
