@@ -9,7 +9,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
     <sub-flow name="ConvertTemp_SubFlow">
         <logger message="Started flow: #[flow.name]" level="INFO" doc:name="Logger"/>
-        <!-- Dataweave transform converts temp from C to F or from F to C depending on input. No handling for other temperature conversions at this time -->
+        <!-- Dataweave transform converts temp from C to F or from F to C depending on input. No handling for other temperature unit conversions at this time -->
         <dw:transform-message doc:name="Transform Message" metadata:id="e10f809d-07a7-4d5b-b79b-1ab997734862">
             <dw:input-payload mimeType="application/xml"/>
             <dw:set-payload><![CDATA[%dw 1.0
